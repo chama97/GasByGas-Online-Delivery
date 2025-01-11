@@ -23,14 +23,13 @@ import com.lmu.gasbygas.util.ResponseUtil;
 public class UserServiceImpl implements UserService {
 
     @Autowired
-	private UserRepo userRepo;
+    private UserRepo userRepo;
 
     @Autowired
     private JWTUtil jwtUtil;
 
     @Autowired
-    PwdEncoder encoder;
-
+    private PwdEncoder encoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -41,27 +40,25 @@ public class UserServiceImpl implements UserService {
         return new User(userEntity.getUsername(), "", new ArrayList<>());
     }
 
-
     @Override
     public ResponseUtil authenticationLogin(LoginReqDTO loginReqDTO) {
-        
-		UserEntity userEntity = userRepo.findFirstByUsername(loginReqDTO.getUsername());
-		if (userEntity != null) {
-			Boolean isMatch = encoder.matches(loginReqDTO.getPassword(),
-					userEntity.getPassword());
-			if (isMatch) {
-				String accessToken = jwtUtil.generateToken(userEntity.getUsername(),
-						Integer.toString(userEntity.getUserId()));
-				HashMap<String, Object> data = new HashMap<String, Object>();
-				data.put("token", accessToken);
-				return new ResponseUtil(200, "Login Successfully", data);
-			} else {
-                return new ResponseUtil(401, "Invalid Credentials", null);
-			}
 
-		} else {
+        UserEntity userEntity = userRepo.findFirstByUsername(loginReqDTO.getUsername());
+        if (userEntity != null) {
+            Boolean isMatch = encoder.matches(loginReqDTO.getPassword(),
+                    userEntity.getPassword());
+            if (isMatch) {
+                String accessToken = jwtUtil.generateToken(userEntity.getUsername(),
+                        Integer.toString(userEntity.getUserId()));
+                HashMap<String, Object> data = new HashMap<String, Object>();
+                data.put("token", accessToken);
+                return new ResponseUtil(200, "Login Successfully", data);
+            } else {
+                return new ResponseUtil(401, "Invalid Credentials", null);
+            }
+        } else {
             return new ResponseUtil(404, "User Not Found", null);
-		}
-	}
+        }
+    }
 
 }

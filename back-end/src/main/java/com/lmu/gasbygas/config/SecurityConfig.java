@@ -32,10 +32,10 @@ public class SecurityConfig {
         return encoder;
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/public/**", "/auth/register");
-    }
+    // @Bean
+    // public WebSecurityCustomizer webSecurityCustomizer() {
+    //     return (web) -> web.ignoring().requestMatchers("/auth/login", "/auth/register");
+    // }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
