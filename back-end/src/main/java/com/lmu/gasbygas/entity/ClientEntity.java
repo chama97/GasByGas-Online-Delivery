@@ -12,28 +12,37 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "user")
-public class UserEntity {
+@Entity(name = "client")
+public class ClientEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",columnDefinition = "INT")
     private int userId;
 
-    @Column(name = "reg_id")
-    private String regId;
+    @Column(name = "role")
+    private int roleId;
 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "username")
-    private String username;
+    @Column(name = "email")
+    private String email;
 
-    @Column(name = "password")
-    private String password;
+    @Column(name = "address")
+    private String address;
 
-    @Column(name = "role_id")
-    private int role;
+    @Column(name = "contact")
+    private String contact;
+
+    @Column(name = "nic")
+    private String nic;
+
+    @Column(name = "reg_number")
+    private String registrationNumber;
+
+    @Column(name = "certification")
+    private String certification;
 
     @Column(name = "status")
     private int status;
