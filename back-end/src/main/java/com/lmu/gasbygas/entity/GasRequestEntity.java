@@ -16,28 +16,27 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "user")
-public class UserEntity {
-
+@Entity(name = "gas_request")
+public class GasRequestEntity {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",columnDefinition = "INT")
     private int userId;
 
-    @Column(name = "role_id")
-    private int roleId;
+    @Column(name = "reg_id")
+    private int regId;
 
-    @Column(name = "username")
-    private String username;
+    @Column(name = "outlet_id")
+    private int outletId;
 
-    @Column(name = "password")
-    private String password;
+    @Column(name = "gas_id")
+    private int gasId;
 
     @CreationTimestamp
     @Column(name = "created_at", columnDefinition = "TIMESTAMP")
     private Date created_at;
 
     @Column(name = "status")
-    private int status;
-    
+    private String status;
 }

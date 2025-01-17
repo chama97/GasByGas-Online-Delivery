@@ -13,31 +13,35 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "user")
-public class UserEntity {
+@Entity(name = "temp_client")
+public class TempClientEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",columnDefinition = "INT")
-    private int userId;
+    private int id;
 
-    @Column(name = "role_id")
-    private int roleId;
+    @Column(name = "email")
+    private String email;
 
-    @Column(name = "username")
-    private String username;
+    @Column(name = "en_password")
+    private String encryptedPassword;
 
-    @Column(name = "password")
-    private String password;
+    @Column(name = "email_otp")
+    private String emailOtp;
+
+    @Column(name = "contact_otp")
+    private String contactOtp;
+
+    @Column(name = "client_data")
+    private String clientDataJson;
 
     @CreationTimestamp
     @Column(name = "created_at", columnDefinition = "TIMESTAMP")
     private Date created_at;
-
-    @Column(name = "status")
-    private int status;
     
 }

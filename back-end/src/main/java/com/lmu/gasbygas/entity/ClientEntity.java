@@ -18,6 +18,9 @@ public class ClientEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",columnDefinition = "INT")
+    private int clientId;
+
+    @Column(name = "user_id")
     private int userId;
 
     @Column(name = "role")
