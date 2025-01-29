@@ -1,10 +1,14 @@
 package com.lmu.gasbygas.entity;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,6 +16,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,23 +26,27 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "request")
-public class GasRequestEntity {
-    
+@Entity(name = "delivery_schedule")
+public class DeliveryScheduleEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",columnDefinition = "INT")
-    private int requestId;
+    private int scheduleId;
+    
+    @ManyToOne
+    @JoinColumn(name = "outlet_id")
+    private OutletEntity outlet;
 
-    @Column(name = "client_id")
-    private int clientId;
+    @Column(name = "delivery_date")
+    private LocalDate deliveryDate;
 
-    @Column(name = "outlet_id")
-    private int outletId;
+    @Column(name = "delivery_time")
+    private LocalTime deliveryTime;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private RequestStatus status = RequestStatus.PENDING;
+    private ScheduleStatus status = ScheduleStatus.SCHEDULED;
 
     @CreationTimestamp
     @Column(name = "created_at", columnDefinition = "TIMESTAMP")
@@ -45,9 +56,11 @@ public class GasRequestEntity {
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP")
     private Date updated_at;
 
-    public enum RequestStatus {
-        PENDING, APPROVED, REJECTED, COMPLETED, REALLOCATED
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
+    private List<DeliveryStockEntity> stockList;  
+
+    public enum ScheduleStatus {
+        SCHEDULED, IN_TRANSIT, DELIVERED, DELAYED
     }
     
-
 }

@@ -128,17 +128,17 @@ public class ClientServiceImpl implements ClientService {
 
     private UserEntity setUserEntity(ClientRegisterReqDTO clientRegisterReqDTO, UserEntity userEntity,
             String password) {
-        userEntity.setUsername(clientRegisterReqDTO.getEmail());
+        userEntity.setEmail(clientRegisterReqDTO.getEmail());
         userEntity.setPassword(password);
-        userEntity.setRoleId(clientRegisterReqDTO.getRoleId());
-        userEntity.setStatus(clientRegisterReqDTO.getRoleId() == 3 ? 1 : 0);
+        userEntity.setRole(clientRegisterReqDTO.getRoleId());
+        userEntity.setStatus(clientRegisterReqDTO.getRoleId().getRoleId() == 3 ? 1 : 0);
         return userEntity;
     }
 
     private ClientEntity setClientEntity(ClientRegisterReqDTO clientRegisterReqDTO, ClientEntity clientEntity,
             UserEntity userEntity) {
-        clientEntity.setUserId(userEntity.getUserId());
-        clientEntity.setRoleId(clientRegisterReqDTO.getRoleId());
+        clientEntity.setUser(userEntity);
+        clientEntity.setRole(clientRegisterReqDTO.getRoleId());
         clientEntity.setName(clientRegisterReqDTO.getName());
         clientEntity.setEmail(clientRegisterReqDTO.getEmail());
         clientEntity.setAddress(clientRegisterReqDTO.getAddress());
@@ -146,7 +146,7 @@ public class ClientServiceImpl implements ClientService {
         clientEntity.setNic(clientRegisterReqDTO.getNic());
         clientEntity.setRegistrationNumber(clientRegisterReqDTO.getRegistrationNumber());
         clientEntity.setCertification(clientRegisterReqDTO.getCertification());
-        clientEntity.setStatus(clientRegisterReqDTO.getRoleId() == 3 ? 1 : 0);
+        clientEntity.setStatus(clientRegisterReqDTO.getRoleId().getRoleId() == 3 ? 1 : 0);
         return clientEntity;
     }
 
@@ -170,7 +170,7 @@ public class ClientServiceImpl implements ClientService {
         clientSearchResDTO.setEmail(clientEntity.getEmail());
         clientSearchResDTO.setAddress(clientEntity.getAddress());
         clientSearchResDTO.setContact(clientEntity.getContact());
-        clientSearchResDTO.setRoleId(clientEntity.getRoleId());
+        clientSearchResDTO.setRoleId(clientEntity.getRole().getRoleId());
         clientSearchResDTO.setNic(clientEntity.getNic());
         clientSearchResDTO.setRegistrationNumber(clientEntity.getRegistrationNumber());
         clientSearchResDTO.setCertification(clientEntity.getCertification());
@@ -183,7 +183,6 @@ public class ClientServiceImpl implements ClientService {
         if (clientEntity != null) {
             clientEntity.setName(clientUpdateReqDTO.getName());
             clientEntity.setAddress(clientUpdateReqDTO.getAddress());
-            clientEntity.setContact(clientUpdateReqDTO.getContact());
             ClientEntity clientUpdate = clientRepo.save(clientEntity);
             if (clientUpdate != null) {
                 return new ResponseUtil(200, "Success", null);
@@ -204,7 +203,7 @@ public class ClientServiceImpl implements ClientService {
         }
         ClientEntity clientEntity = clientRepo.findClientByUserId(id);
         if (clientEntity == null) {
-            throw new RuntimeException("Client Email not found");
+            throw new RuntimeException("Client Id not found");
         }
         if (status == 1) {
             userEntity.setStatus(1);

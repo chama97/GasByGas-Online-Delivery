@@ -1,14 +1,14 @@
 package com.lmu.gasbygas.entity;
 
-import java.util.List;
+import java.util.Date;
 
-import jakarta.persistence.CascadeType;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,21 +16,22 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "role")
-public class RoleEntity {
+@Entity(name = "gas")
+public class GasEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",columnDefinition = "INT")
-    private int roleId;
+    private int gasId;
 
-    @Column(name = "role_name")
-    private String name;
+    @Column(name = "type")
+    private String type;
 
-    @OneToMany(mappedBy = "role",cascade = CascadeType.ALL)
-    private List<UserEntity> users;
+    @Column(name = "price")
+    private double price;
 
-    @OneToMany(mappedBy = "role",cascade = CascadeType.ALL)
-    private List<ClientEntity> client;
+    @UpdateTimestamp
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP")
+    private Date updated_at;
     
 }

@@ -1,5 +1,7 @@
 package com.lmu.gasbygas.dto.response;
 
+import com.lmu.gasbygas.entity.RoleEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

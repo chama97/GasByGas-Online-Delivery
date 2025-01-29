@@ -1,5 +1,7 @@
 package com.lmu.gasbygas.dto.request;
 
+import com.lmu.gasbygas.entity.RoleEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +16,7 @@ public class ClientRegisterReqDTO {
     private String password;
     private String address;
     private String contact;
-    private int roleId;
+    private RoleEntity roleId;
     private String nic;
     private String registrationNumber;
     private String certification;

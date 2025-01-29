@@ -7,7 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginReqDTO {
-    private String email;
-    private String password;
+public class GasReqDTO {
+
+    private int gasId;
+    private String type;
+    private double price;
+    
 }

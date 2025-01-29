@@ -33,22 +33,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepo.findFirstByUsername(username);
+        UserEntity userEntity = userRepo.findFirstByEmail(username);
         if (userEntity == null) {
             return null;
         }
-        return new User(userEntity.getUsername(), "", new ArrayList<>());
+        return new User(userEntity.getEmail(), "", new ArrayList<>());
     }
 
     @Override
     public ResponseUtil authenticationLogin(LoginReqDTO loginReqDTO) {
 
-        UserEntity userEntity = userRepo.findFirstByUsername(loginReqDTO.getUsername());
+        UserEntity userEntity = userRepo.findFirstByEmail(loginReqDTO.getEmail());
         if (userEntity != null) {
             Boolean isMatch = encoder.matches(loginReqDTO.getPassword(),
                     userEntity.getPassword());
             if (isMatch) {
-                String accessToken = jwtUtil.generateToken(userEntity.getUsername(),
+                String accessToken = jwtUtil.generateToken(userEntity.getEmail(),
                         Integer.toString(userEntity.getUserId()));
                 HashMap<String, Object> data = new HashMap<String, Object>();
                 data.put("token", accessToken);

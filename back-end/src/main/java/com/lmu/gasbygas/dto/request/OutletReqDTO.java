@@ -7,8 +7,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClientUpdateReqDTO {
-    private String email;
+public class OutletReqDTO {
+
+    private int id;
     private String name;
-    private String address;
+    private String managerName;
+    private String location;
+    private String contact;
+    private int status;
+    
 }

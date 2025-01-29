@@ -8,7 +8,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,21 +18,31 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "role")
-public class RoleEntity {
+@Entity(name = "outlet")
+public class OutletEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",columnDefinition = "INT")
-    private int roleId;
+    private int outletId;
 
-    @Column(name = "role_name")
+    @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "role",cascade = CascadeType.ALL)
-    private List<UserEntity> users;
+    @OneToOne
+    @JoinColumn(name = "manager_id")
+    private OutletManagerEntity manager;
 
-    @OneToMany(mappedBy = "role",cascade = CascadeType.ALL)
-    private List<ClientEntity> client;
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "contact")
+    private String contact;
+
+    @Column(name = "status")
+    private int status;
+
+    @OneToMany(mappedBy = "outlet", cascade = CascadeType.ALL)
+    private List<DeliveryScheduleEntity> schedules;
     
 }

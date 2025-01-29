@@ -1,14 +1,12 @@
 package com.lmu.gasbygas.entity;
 
-import java.util.List;
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,21 +14,28 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "role")
-public class RoleEntity {
+@Entity(name = "outlet_manager")
+public class OutletManagerEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",columnDefinition = "INT")
-    private int roleId;
+    private int managerId;
 
-    @Column(name = "role_name")
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
+
+    @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "role",cascade = CascadeType.ALL)
-    private List<UserEntity> users;
+    @Column(name = "email")
+    private String email;
 
-    @OneToMany(mappedBy = "role",cascade = CascadeType.ALL)
-    private List<ClientEntity> client;
+    @Column(name = "nic")
+    private String nic;
+
+    @Column(name = "status")
+    private int status;
     
 }
