@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,10 +42,10 @@ public class OutletController {
         }
     }
 
-    @PutMapping(path = "/update-outlet")
-    public ResponseUtil updateOutlet(@RequestBody OutletReqDTO dto ,Authentication authentication) {
+    @PutMapping(path = "/update-outlet/{id}")
+    public ResponseUtil updateOutlet(@PathVariable int id, @RequestBody OutletReqDTO dto ,Authentication authentication) {
         try {
-            return outletService.updateOutlet(dto);
+            return outletService.updateOutlet(id, dto);
         } catch (Exception e) {
             return new ResponseUtil(500, e.getLocalizedMessage(), null);
         }

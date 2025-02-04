@@ -10,7 +10,7 @@ public interface OutletService {
     ResponseUtil addNewOutlet(OutletReqDTO outletReqDTO);
     ResponseUtil getManagerNameList();
     ResponseUtil getAllOutletList();
-    ResponseUtil updateOutlet(OutletReqDTO outletReqDTO);
+    ResponseUtil updateOutlet(int outletId, OutletReqDTO outletReqDTO);
     ResponseUtil getOutletNameList();
     
 }

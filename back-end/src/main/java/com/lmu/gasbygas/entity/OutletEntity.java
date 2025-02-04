@@ -33,14 +33,17 @@ public class OutletEntity {
     @JoinColumn(name = "manager_id")
     private OutletManagerEntity manager;
 
-    @Column(name = "location")
-    private String location;
+    @Column(name = "district")
+    private String district;
+
+    @Column(name = "address")
+    private String address;
 
     @Column(name = "contact")
     private String contact;
 
     @Column(name = "status")
-    private int status;
+    private String status;
 
     @OneToMany(mappedBy = "outlet", cascade = CascadeType.ALL)
     private List<DeliveryScheduleEntity> schedules;

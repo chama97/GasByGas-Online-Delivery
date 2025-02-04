@@ -2,7 +2,6 @@ package com.lmu.gasbygas.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -84,7 +83,7 @@ public class OutletServiceImpl implements OutletService {
     @Override
     public ResponseUtil addNewOutlet(OutletReqDTO outletReqDTO) {
 
-        boolean existOutlet = outletRepo.existsByLocation(outletReqDTO.getLocation());
+        boolean existOutlet = outletRepo.existsByDistrict(outletReqDTO.getDistrict());
         if (existOutlet) {
             throw new RuntimeException("Outlet allready exist");
         }
@@ -129,8 +128,9 @@ public class OutletServiceImpl implements OutletService {
                 OutletResDTO odto = new OutletResDTO();
                 odto.setOutletId(oe.getOutletId());
                 odto.setName(oe.getName());
-                odto.setManagerName(oe.getManager());
-                odto.setLocation(oe.getLocation());
+                odto.setManagerName(oe.getManager().getName());
+                odto.setDistrict(oe.getDistrict());
+                odto.setAddress(oe.getAddress());
                 odto.setContact(oe.getContact());
                 odto.setStatus(oe.getStatus());
                 outletResDTOs.add(odto);
@@ -142,9 +142,9 @@ public class OutletServiceImpl implements OutletService {
     }
 
     @Override
-    public ResponseUtil updateOutlet(OutletReqDTO outletReqDTO) {
+    public ResponseUtil updateOutlet(int outletId, OutletReqDTO outletReqDTO) {
         OutletManagerEntity outletManagerEntity = outletManagerRepo.findByName(outletReqDTO.getManagerName());
-        OutletEntity outletEntity = outletRepo.findByOutletId(outletReqDTO.getId());
+        OutletEntity outletEntity = outletRepo.findByOutletId(outletId);
         if (outletEntity != null) {
             outletEntity = setOutlet(outletReqDTO, outletEntity, outletManagerEntity);
             OutletEntity saveOutlet = outletRepo.save(outletEntity);
@@ -162,7 +162,8 @@ public class OutletServiceImpl implements OutletService {
             OutletManagerEntity outletManagerEntity) {
         outletEntity.setName(outletReqDTO.getName());
         outletEntity.setManager(outletManagerEntity);
-        outletEntity.setLocation(outletReqDTO.getLocation());
+        outletEntity.setDistrict(outletReqDTO.getDistrict());
+        outletEntity.setAddress(outletReqDTO.getAddress());
         outletEntity.setContact(outletReqDTO.getContact());
         outletEntity.setStatus(outletReqDTO.getStatus());
         return outletEntity;
@@ -170,13 +171,13 @@ public class OutletServiceImpl implements OutletService {
 
     @Override
     public ResponseUtil getOutletNameList() {
-        List<OutletEntity> outletEntities = outletRepo.findAllNameByStatus(AppConstant.ACTIVE);
+        List<OutletEntity> outletEntities = outletRepo.findAllNames();
         List<OutletNameResDTO> outletNameResDTOs = new ArrayList<>();
         if (outletEntities != null) {
             for (OutletEntity oe : outletEntities) {
                 OutletNameResDTO mdto = new OutletNameResDTO();
                 mdto.setOutletName(oe.getName());
-                mdto.setLocation(oe.getLocation());
+                mdto.setDistrict(oe.getDistrict());
                 outletNameResDTOs.add(mdto);
             }
             return new ResponseUtil(200, "Success", outletNameResDTOs);

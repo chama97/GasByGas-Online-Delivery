@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OutletReqDTO {
 
-    private int id;
     private String name;
     private String managerName;
-    private String location;
+    private String district;
+    private String address;
     private String contact;
-    private int status;
+    private String status;
     
 }

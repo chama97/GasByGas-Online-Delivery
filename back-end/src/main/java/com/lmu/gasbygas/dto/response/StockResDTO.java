@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OutletNameResDTO {
-
-    private String outletName;
-    private String district;
+public class StockResDTO {
     
+    private int gasId;
+    private String gasType;
+    private int quantity;
 }
