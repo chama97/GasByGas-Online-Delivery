@@ -1,6 +1,7 @@
 package com.lmu.gasbygas.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,5 +18,6 @@ public interface StockRepo extends JpaRepository<DeliveryStockEntity, Integer> {
 
     @Query(value = FIND_BY_SCHEDULE_ID, nativeQuery = true)
     List<DeliveryStockEntity> findByScheduleId(int id);
+   
     
 }
