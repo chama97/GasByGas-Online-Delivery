@@ -19,6 +19,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "delivery_schedule")
+@Entity
+@Table(name = "delivery_schedule")
 public class DeliveryScheduleEntity {
 
     @Id
@@ -41,12 +43,9 @@ public class DeliveryScheduleEntity {
     @Column(name = "delivery_date")
     private LocalDate deliveryDate;
 
-    @Column(name = "delivery_time")
-    private LocalTime deliveryTime;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private ScheduleStatus status = ScheduleStatus.SCHEDULED;
+    private ScheduleStatus status = ScheduleStatus.PENDING;
 
     @CreationTimestamp
     @Column(name = "created_at", columnDefinition = "TIMESTAMP")
@@ -60,7 +59,7 @@ public class DeliveryScheduleEntity {
     private List<DeliveryStockEntity> stockList;  
 
     public enum ScheduleStatus {
-        SCHEDULED, IN_TRANSIT, DELIVERED, DELAYED
+        PENDING, SCHEDULED, IN_TRANSIT, DELIVERED, DELAYED
     }
     
 }

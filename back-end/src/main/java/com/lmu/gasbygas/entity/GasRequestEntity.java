@@ -17,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,10 +27,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity(name = "request")
 public class GasRequestEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id",columnDefinition = "INT")
+    @Column(name = "id", columnDefinition = "INT")
     private int requestId;
 
     @ManyToOne
@@ -53,11 +54,13 @@ public class GasRequestEntity {
     private Date updated_at;
 
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
-    private List<GasRequestDetailsEntity> request;
+    private List<GasRequestDetailsEntity> requestDetails;
+
+    @OneToOne(mappedBy = "request", cascade = CascadeType.ALL)
+    private TokenEntity token;
 
     public enum RequestStatus {
         PENDING, APPROVED, REJECTED, COMPLETED, REALLOCATED
     }
-    
 
 }

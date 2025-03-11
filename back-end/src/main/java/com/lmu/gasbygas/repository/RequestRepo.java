@@ -14,6 +14,7 @@ public interface RequestRepo extends JpaRepository<GasRequestEntity, Integer> {
     String FIND_BY_OUTLET_ID = "SELECT * FROM request WHERE outlet_id = ?1";
     String CLIENT_EXIST = "SELECT EXISTS ( SELECT 1 FROM request WHERE client_id = ? AND status <> 'COMPLETED') AS request_exists";
 
+
     @Query(value = FIND_BY_CLIENT_ID, nativeQuery = true)
     List<GasRequestEntity> findAllByClientId(int clientId);
 
@@ -22,5 +23,7 @@ public interface RequestRepo extends JpaRepository<GasRequestEntity, Integer> {
 
     @Query(value = FIND_BY_OUTLET_ID, nativeQuery = true)
     List<GasRequestEntity> findAllByOutletId();
+
+    long countByClient_ClientIdAndStatusNot(int clientId, GasRequestEntity.RequestStatus status);
     
 }

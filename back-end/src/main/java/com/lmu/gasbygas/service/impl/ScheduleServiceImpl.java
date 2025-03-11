@@ -1,5 +1,8 @@
 package com.lmu.gasbygas.service.impl;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,10 +21,12 @@ import com.lmu.gasbygas.entity.DeliveryScheduleEntity;
 import com.lmu.gasbygas.entity.DeliveryStockEntity;
 import com.lmu.gasbygas.entity.GasEntity;
 import com.lmu.gasbygas.entity.OutletEntity;
+import com.lmu.gasbygas.entity.TokenEntity;
 import com.lmu.gasbygas.repository.GasRepo;
 import com.lmu.gasbygas.repository.OutletRepo;
 import com.lmu.gasbygas.repository.ScheduleRepo;
 import com.lmu.gasbygas.repository.StockRepo;
+import com.lmu.gasbygas.repository.TokenRepo;
 import com.lmu.gasbygas.service.ScheduleService;
 import com.lmu.gasbygas.util.ResponseUtil;
 
@@ -41,6 +46,12 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Autowired
     GasRepo gasRepo;
 
+    @Autowired
+    private TokenRepo tokenRepo;
+
+    @Autowired
+    private MessangingServiceImpl messangingService;
+
     @Override
     public ResponseUtil scheduleDelivery(ScheduleReqDTO scheduleReqDTO) {
 
@@ -50,7 +61,6 @@ public class ScheduleServiceImpl implements ScheduleService {
         DeliveryScheduleEntity scheduleEntity = new DeliveryScheduleEntity();
         scheduleEntity.setOutlet(outlet);
         scheduleEntity.setDeliveryDate(scheduleReqDTO.getDeliveryDate());
-        scheduleEntity.setDeliveryTime(scheduleReqDTO.getDeliveryTime());
         try {
             scheduleEntity.setStatus(DeliveryScheduleEntity.ScheduleStatus.valueOf(scheduleReqDTO.getStatus()));
         } catch (IllegalArgumentException e) {
@@ -94,7 +104,6 @@ public class ScheduleServiceImpl implements ScheduleService {
                 sdto.setScheduleId(dse.getScheduleId());
                 sdto.setOutletId(dse.getOutlet().getOutletId());
                 sdto.setDeliveryDate(dse.getDeliveryDate());
-                sdto.setDeliveryTime(dse.getDeliveryTime());
                 sdto.setStatus(dse.getStatus().name());
                 sdto.setStockList(dse.getStockList().stream().map(stock -> new StockResDTO(
                         stock.getGas().getGasId(),
@@ -109,28 +118,87 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public ResponseUtil updateScheduleStatus(int id, String status) {
+    public ResponseUtil updateScheduleStatus(int id, LocalDate deliveryDate, String status) {
 
         DeliveryScheduleEntity scheduleEntity = scheduleRepo.findByScheduleId(id);
         if (scheduleEntity == null) {
             return new ResponseUtil(404, "Schedule not found with ID: " + id, null);
         }
+
         try {
-            scheduleEntity.setStatus(DeliveryScheduleEntity.ScheduleStatus.valueOf(status));
+            DeliveryScheduleEntity.ScheduleStatus newStatus = DeliveryScheduleEntity.ScheduleStatus.valueOf(status);
+
+            switch (newStatus) {
+                case PENDING:
+                    scheduleEntity.setStatus(newStatus);
+                    scheduleEntity.setDeliveryDate(deliveryDate);
+                    scheduleRepo.save(scheduleEntity);
+                    notifyAllTokenHolders(id, deliveryDate);
+                    return new ResponseUtil(200, "Schedule status updated and notifications sent", null);
+
+                case DELAYED:
+                    scheduleEntity.setStatus(newStatus);
+                    scheduleRepo.save(scheduleEntity);
+                    updateTokenPickupDate(id, deliveryDate);
+                    return new ResponseUtil(200, "Schedule delayed. Token pickup dates updated", null);
+
+                default:
+                    scheduleEntity.setStatus(newStatus);
+                    scheduleRepo.save(scheduleEntity);
+                    return new ResponseUtil(200, "Schedule status updated successfully", null);
+            }
         } catch (IllegalArgumentException e) {
             return new ResponseUtil(400, "Invalid status value: " + status, null);
         }
-        scheduleRepo.save(scheduleEntity);
-        return new ResponseUtil(200, "Schedule status updated successfully", null);
     }
 
+    private void notifyAllTokenHolders(int scheduleId, LocalDate deliveryDate) {
+        List<TokenEntity> tokens = tokenRepo.findByScheduleId(scheduleId);
+
+        for (TokenEntity token : tokens) {
+            String email = token.getRequest().getClient().getEmail();
+            String outletLocation = token.getRequest().getOutlet().getAddress();
+            LocalDateTime expiryDate = token.getExpiryDate();
+            LocalDateTime pickupDate = token.getPickupDate();
+
+            try {
+                messangingService.sendEmailHandOverEmptyCylinder(email, pickupDate, expiryDate, outletLocation);
+            } catch (Exception e) {
+                System.err.println("Failed to send notifications: " + e.getMessage());
+            }
+        }
+    }
+
+    private void updateTokenPickupDate(int scheduleId, LocalDate delayDate) {
+        List<TokenEntity> tokens = tokenRepo.findByScheduleId(scheduleId);
+
+        for (TokenEntity token : tokens) {
+            LocalDateTime previousPickupDate = token.getPickupDate();
+            LocalDateTime newPickupDate = previousPickupDate
+                    .plusDays(ChronoUnit.DAYS.between(LocalDate.now(), delayDate));
+
+            token.setPickupDate(newPickupDate);
+            token.setExpiryDate(newPickupDate.plusWeeks(2));
+
+            String email = token.getRequest().getClient().getEmail();
+            String outletLocation = token.getRequest().getOutlet().getAddress();
+            LocalDateTime expiryDate = token.getExpiryDate();
+
+            tokenRepo.save(token);
+
+            try {
+                messangingService.sendEmailScheduleDelayed(email, newPickupDate, expiryDate, outletLocation);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Override
     public ResponseUtil updateSchedule(int id, ScheduleReqDTO scheduleReqDTO) {
         DeliveryScheduleEntity scheduleEntity = scheduleRepo.findByScheduleId(id);
         if (scheduleEntity != null) {
             scheduleEntity.setDeliveryDate(scheduleReqDTO.getDeliveryDate());
-            scheduleEntity.setDeliveryTime(scheduleReqDTO.getDeliveryTime());
             try {
                 scheduleEntity.setStatus(DeliveryScheduleEntity.ScheduleStatus.valueOf(scheduleReqDTO.getStatus()));
             } catch (IllegalArgumentException e) {
@@ -174,24 +242,24 @@ public class ScheduleServiceImpl implements ScheduleService {
                 throw new RuntimeException("Failded to update Schedule");
             }
         } else {
-            return new ResponseUtil(404, "Schedule not found with ID: "+id, null);
+            return new ResponseUtil(404, "Schedule not found with ID: " + id, null);
         }
     }
 
     @Override
     public ResponseUtil deleteSchedule(int id) {
         DeliveryScheduleEntity scheduleEntity = scheduleRepo.findByScheduleId(id);
-        if (scheduleEntity != null){
+        if (scheduleEntity != null) {
             scheduleRepo.delete(scheduleEntity);
 
             List<DeliveryStockEntity> stockEntity = stockRepo.findByScheduleId(id);
             for (DeliveryStockEntity stock : stockEntity) {
-                    stockRepo.delete(stock);
+                stockRepo.delete(stock);
             }
-        return new ResponseUtil(200, "Schedule Deleted Successfully", null);
+            return new ResponseUtil(200, "Schedule Deleted Successfully", null);
 
-        }else{
-           throw new RuntimeException("schedule not found with ID: "+id);
+        } else {
+            throw new RuntimeException("schedule not found with ID: " + id);
         }
     }
 

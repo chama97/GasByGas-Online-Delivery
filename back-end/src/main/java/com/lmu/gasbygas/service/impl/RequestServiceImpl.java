@@ -1,7 +1,9 @@
 package com.lmu.gasbygas.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -20,6 +22,7 @@ import com.lmu.gasbygas.entity.GasEntity;
 import com.lmu.gasbygas.entity.GasRequestDetailsEntity;
 import com.lmu.gasbygas.entity.GasRequestEntity;
 import com.lmu.gasbygas.entity.OutletEntity;
+import com.lmu.gasbygas.entity.TokenEntity;
 import com.lmu.gasbygas.repository.ClientRepo;
 import com.lmu.gasbygas.repository.GasRepo;
 import com.lmu.gasbygas.repository.OutletRepo;
@@ -27,6 +30,7 @@ import com.lmu.gasbygas.repository.RequestDetailsRepo;
 import com.lmu.gasbygas.repository.RequestRepo;
 import com.lmu.gasbygas.repository.ScheduleRepo;
 import com.lmu.gasbygas.repository.StockRepo;
+import com.lmu.gasbygas.repository.TokenRepo;
 import com.lmu.gasbygas.service.RequestService;
 import com.lmu.gasbygas.util.ResponseUtil;
 
@@ -55,6 +59,9 @@ public class RequestServiceImpl implements RequestService {
     @Autowired
     private OutletRepo outletRepo;
 
+    @Autowired
+    private TokenRepo tokenRepo;
+
     @Override
     public ResponseUtil requestGas(GasRequestReqDTO reqDto) {
 
@@ -68,8 +75,9 @@ public class RequestServiceImpl implements RequestService {
             return new ResponseUtil(404, "Outlet not found with ID: " + reqDto.getOutletId(), null);
         }
 
-        boolean existingRequest = requestRepo.existsByClientIdAndStatusNot(reqDto.getClientId(),
+        long existingRequestCount = requestRepo.countByClient_ClientIdAndStatusNot(reqDto.getClientId(),
                 GasRequestEntity.RequestStatus.COMPLETED);
+        boolean existingRequest = existingRequestCount > 0;
         if (existingRequest) {
             return new ResponseUtil(400, "Client already has an active gas request.", null);
         }
@@ -116,16 +124,55 @@ public class RequestServiceImpl implements RequestService {
         requestDetailsRepo.saveAll(requestDetailsList);
 
         if (hasSufficientStock) {
-            // TokenEntity token = new TokenEntity();
-            // token.setRequest(gasRequest);
-            // token.setTokenCode(UUID.randomUUID().toString().substring(0, 8));
-            // tokenRepo.save(token);
+            TokenEntity token = new TokenEntity();
+            token.setRequest(gasRequest);
 
+            LocalDateTime pickupStartTime = scheduleEntity.getDeliveryDate().atTime(8, 0);
+            System.out.println("Scheduled delivery date: " + scheduleEntity.getDeliveryDate());
+
+            LocalDateTime pickupSlot = calculateNextAvailableSlot(pickupStartTime, scheduleEntity.getScheduleId());
+            
+            token.setPickupDate(pickupSlot);
+            token.setExpiryDate(pickupSlot.plusWeeks(2));
+
+            token.setStatus(TokenEntity.TokenStatus.ACTIVE);
+
+            tokenRepo.save(token);
             stockRepo.saveAll(updatedStockList);
 
             return new ResponseUtil(200, "Gas request approved and token generated", null);
         }
         return new ResponseUtil(200, "Gas request added to waiting list (PENDING)", null);
+    }
+
+    private LocalDateTime calculateNextAvailableSlot(LocalDateTime startTime, int scheduleId) {
+        System.out.println("Starting slot calculation with date: " + startTime);
+
+        List<TokenEntity> existingTokens = tokenRepo.findByScheduleId(scheduleId);
+
+        int slotDurationMinutes = 10;
+        int maxPeoplePerSlot = 30;
+        int totalSlotsPerDay = (5 * 60) / slotDurationMinutes;
+
+        Map<LocalDateTime, Long> slotCount = existingTokens.stream()
+                .collect(Collectors.groupingBy(TokenEntity::getPickupDate, Collectors.counting()));
+
+        LocalDateTime pickupSlot = startTime;
+        int assignedSlots = 0;
+
+        while (slotCount.getOrDefault(pickupSlot, 0L) >= maxPeoplePerSlot) {
+            System.out.println("Slot full at: " + pickupSlot + ", moving to next slot...");
+            pickupSlot = pickupSlot.plusMinutes(slotDurationMinutes);
+            assignedSlots++;
+
+            if (assignedSlots >= totalSlotsPerDay) {
+                pickupSlot = pickupSlot.plusDays(1).withHour(8).withMinute(0);
+                assignedSlots = 0;
+            }
+        }
+
+        System.out.println("Final selected slot: " + pickupSlot);
+        return pickupSlot;
     }
 
     @Override
@@ -140,7 +187,7 @@ public class RequestServiceImpl implements RequestService {
                 gdto.setOutletId(gre.getOutlet().getOutletId());
                 gdto.setRequestDate(gre.getCreated_at());
                 gdto.setStatus(gre.getStatus().name());
-                gdto.setResDetails(gre.getRequest().stream().map(deatils -> new GasReqDetailsResDTO(
+                gdto.setResDetails(gre.getRequestDetails().stream().map(deatils -> new GasReqDetailsResDTO(
                         deatils.getDetailId(),
                         deatils.getGas().getGasId(),
                         deatils.getGas().getType(),
@@ -165,7 +212,7 @@ public class RequestServiceImpl implements RequestService {
                 gdto.setOutletId(gre.getOutlet().getOutletId());
                 gdto.setRequestDate(gre.getCreated_at());
                 gdto.setStatus(gre.getStatus().name());
-                gdto.setResDetails(gre.getRequest().stream().map(deatils -> new GasReqDetailsResDTO(
+                gdto.setResDetails(gre.getRequestDetails().stream().map(deatils -> new GasReqDetailsResDTO(
                         deatils.getDetailId(),
                         deatils.getGas().getGasId(),
                         deatils.getGas().getType(),
@@ -190,7 +237,7 @@ public class RequestServiceImpl implements RequestService {
                 gdto.setOutletId(gre.getOutlet().getOutletId());
                 gdto.setRequestDate(gre.getCreated_at());
                 gdto.setStatus(gre.getStatus().name());
-                gdto.setResDetails(gre.getRequest().stream().map(deatils -> new GasReqDetailsResDTO(
+                gdto.setResDetails(gre.getRequestDetails().stream().map(deatils -> new GasReqDetailsResDTO(
                         deatils.getDetailId(),
                         deatils.getGas().getGasId(),
                         deatils.getGas().getType(),

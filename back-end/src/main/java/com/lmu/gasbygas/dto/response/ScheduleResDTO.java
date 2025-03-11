@@ -1,7 +1,6 @@
 package com.lmu.gasbygas.dto.response;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -17,7 +16,6 @@ public class ScheduleResDTO {
     private int outletId;
     private String outletName;
     private LocalDate deliveryDate;
-    private LocalTime deliveryTime;
     private String status;
     private List<StockResDTO> stockList;
 }

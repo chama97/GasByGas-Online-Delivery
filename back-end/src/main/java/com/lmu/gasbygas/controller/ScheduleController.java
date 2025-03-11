@@ -1,5 +1,8 @@
 package com.lmu.gasbygas.controller;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -52,10 +55,10 @@ public class ScheduleController {
         }
     }
 
-    @PutMapping(path = "/update-status/{id}", params = { "status" })
-    public ResponseUtil updateScheduleStaus( @PathVariable int id, @RequestParam String status ,Authentication authentication) {
+    @PutMapping(path = "/update-status/{id}", params = { "date", "status" })
+    public ResponseUtil updateScheduleStaus( @PathVariable int id,@RequestParam LocalDate date, @RequestParam String status ,Authentication authentication) {
         try {
-            return scheduleService.updateScheduleStatus(id, status);
+            return scheduleService.updateScheduleStatus(id, date, status);
         } catch (Exception e) {
             return new ResponseUtil(500, e.getLocalizedMessage(), null);
         }

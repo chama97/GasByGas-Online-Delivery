@@ -1,9 +1,5 @@
 package com.lmu.gasbygas.entity;
 
-import java.util.Date;
-
-import org.hibernate.annotations.UpdateTimestamp;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -36,9 +32,5 @@ public class GasRequestDetailsEntity {
 
     @Column(name = "quantity")
     private int quantity;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMP")
-    private Date updated_at;
     
 }
